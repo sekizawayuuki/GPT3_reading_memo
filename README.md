@@ -94,3 +94,5 @@ OpenBookQAでは、few-shotで性能が改善したが、ベースラインで�
 PIQA, ARCではone-shotでzero-shotをわずかに下回る一貫性のなさが見られたが、OpenBookQAでは大きく改善した。
 
 ## 3.6 Reading Comprehension
+
+
