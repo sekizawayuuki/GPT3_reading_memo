@@ -31,11 +31,24 @@ one-shot, few-shotでは、以下のような形式を使用し、few-shotにお
 物語や手順の終わりとして、最もふさわしい文を選択するデータセット。human accuracyは95.6%だが、言語モデルが解く場合スコアは大きく下がる傾向がある。
 SOTAより正解率が低い一方、ファインチューンされたパラメータ数1.5Bの先行研究の言語モデルの正解率は75.4%であり、こちらは上回っている。
 
-### 3.1.4 StoryCloze
-
-
+### 3.1.4 StoryCloze (2016 dataset)
+5文からなる物語の最後の文を選択するタスク。
+zero-shotでは83.2%、few-shotでは87.7%(K = 70)となりSOTAのBERTモデルには届かず。
 
 ## 3.2 Closed Book Question Answering
+open-book: 情報検索のモデルを使用し、質問・検索テキストを用いて回答を生成するモデル。
+closed-book: 質問文から直接回答文を生成するモデル。こちらの方が情報量が少ないため、制限が大きい（closed-bookのSOTA手法の論文 `How much knowledge can you pack into the parameters
+of a language model?` より）
+
+<img width="892" alt="スクリーンショット 2021-04-01 23 09 06" src="https://user-images.githubusercontent.com/11864345/113307150-ca3ab580-933f-11eb-8ed3-87c4b9d1e63a.png">
+
+
+<img width="892" alt="スクリーンショット 2021-04-01 23 09 06" src="https://user-images.githubusercontent.com/11864345/113306684-4f719a80-933f-11eb-9110-d4b3b8f5b10e.png">
+
+TriviaQAデータセットでは、zero-shotでもclosed-book finetuneモデルを上回り、one-shotではオープンドメインのQAシステムと並び、few-shotでは上回った。
+WebQuestionsデータセットでは、few-shotでSOTAに近い結果となった。zero-shotと比べると大きく改善したため、TriviaQAと比較するとWebQuestionsデータセットの質問および/あるいは解答のスタイルがGPT-3の分布に含まれていない可能性がある（few-shotにおいて、スタイル適用ができていると思われる）。
+NaturalQuestionsデータセットでは、先行研究の正解率に及ばず、zero,one,few-shot間の変化はWebQuestionsの結果と似ている。これは、データセットで質問される内容がWikipediaの細かい知識を用いる必要があるもののため、モデルの限界である可能性がある。
+図3.3に示すように、モデルサイズが大きいほど正解率が上がるため、モデルの容量が知識としてパラメータに吸収されることを示していると言える
 
 ## 3.3 Translation
 
@@ -57,4 +70,27 @@ GPT-3では、言語対を別々に考えずに言語が混在したデータを
 （個人的な感想としては、パラメータ数が多いほどBLEU値が高くなることは直感と一致するが、zero-shotの場合そうとは限らないことが気になった。）
 
 ## 3.4 Winograd-Style Tasks
+Winograd Schemas Challenge: 代名詞がどの名詞を指しているかを予測するタスク。文法的には曖昧だが意味を考慮すると解ける。
+2012年バージョンのWinogradデータセットではfinetune済言語モデルでhuman performanceに近い性能を示したが、2019年バージョンの（難しくなった）Winograndeデータセットでは差が開いた。
+実験ではGPT-2と同じ設定である部分評価で行った
 
+<img width="883" alt="スクリーンショット 2021-04-01 23 12 44" src="https://user-images.githubusercontent.com/11864345/113315986-d8410400-9348-11eb-8bb8-124238ce48b9.png">
+
+Winogradでは、human performanceに近い性能のSOTAに近い結果となった（WinogradスキーマのデータがGPT-3の学習データに少し含まれており論文内ではdata contamination: データ汚染と呼ばれている、詳細はsection4で述べられるが影響はわずかとのこと）。
+Winograndeでは、zero,one,few-shotとなるごとに性能が高くなった。他手法との比較としては、fine-tune済RoBERTAモデル: 79%, SOTA(finetune済T5): 84.6%, human performance: 94.0%である。
+
+## 3.5 Common Sense Reasoning
+PhysicalQA: 物理系常識のQA
+ARC: 3年~9年の科学実験から収集された複数選択式QA。Challengeバージョンは、統計的手法や情報検索手法では正しく回答できない。
+
+<img width="878" alt="スクリーンショット 2021-04-02 0 17 34" src="https://user-images.githubusercontent.com/11864345/113323209-a92e9080-9350-11eb-8cfa-5028cc4cf65a.png">
+
+PhysicalQAでは、zero,one,few-shot全てにおいてSOTA(finetune済RoBEATa)を上回った一方、human performanceを10%以上下回った。
+データサイズを大きくしてもそれほど性能は改善せず、加えて（testのラベルは公開されていないが）データ汚染の問題があると思われるため、table3.6に\*を付加（詳細はsection4）。
+
+ARCでは、Challengeバージョンにおいてベースライン(finetune済RoBEATa)の55.9%に近い結果となった。Easyバージョンでは同ベースラインをわずかに上回った。（リーダーボードに記載されているが、67.75%）
+OpenBookQAでは、few-shotで性能が改善したが、ベースラインであるfinetune済BEAT Largeと同等であった。（リーダーボードに記載されているが、60.4%）
+
+PIQA, ARCではone-shotでzero-shotをわずかに下回る一貫性のなさが見られたが、OpenBookQAでは大きく改善した。
+
+## 3.6 Reading Comprehension
