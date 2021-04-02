@@ -161,4 +161,57 @@ Ops(operations): 2つの演算子（+,-,\*のどれか）が含まれる計算 (
 
 加算、減算では、2桁加算では100%、減算では98.9%、3桁ではそれぞれ80.2%、94.2%と高い正解率を示し、桁数が多いほど正解率が下がる（一般化する能力はある）。
 乗算や複数演算子の正解率は20%台であり、単純ではない計算に対してもある程度対応できている。
+zero-shot, one-shotはfew-shotと比較すると正解率が低く、計算を行うタスクへの適応が重要といえる
+学習データでの出現を記憶しているだけの可能性があるため、3桁の加算減算2000件に対して"<NUM1> + <NUM2> =" および "<NUM1> plus <NUM2>"のような出現があるかを確認したところ、加算が17件、減算が2件のみであり、ほとんどは出現していなかった。
+また、不正解であった回答を確認すると、繰り上がりの1が反映されていなかったなどの間違いが多く、実際に計算しようとしていると思われる。
 
+### 3.9.2 Word Scrambling and Manipulation Tasks
+ある英単語に対して文字に関する編集を行い、元の単語を予測するタスク。以下の5つを設定。
+
+• Cycle letters in word (CL): 単語の文字をループさせ始点を変更した場合に、元の単語を予測。(lyinevitab = inevitably)
+• Anagrams of all but first and last characters (A1): 最初と最後の1文字ずつ以外が並び替えられている場合に、元の単語を予測。(criroptuon = corruption)
+• Anagrams of all but first and last 2 characters (A2): 最初と最後の2文字ずつ以外が並び替えられている場合に、元の単語を予測。(opoepnnt = opponent)
+• Random insertion in word (RI): 句読点やスペースが各文字の後ろにランダムに挿入されている場合に、元の単語を予測。(s.u!c/c!e.s s i/o/n = succession)
+• Reversed words (RW): 単語の文字が逆に並び替えられている場合に、元の単語を予測。(stcejbo = objects)
+
+5~14文字からなる高頻度単語10,000語に対して実験（論文 `Natural language corpus data` を用いて取得）
+
+<img width="865" alt="スクリーンショット 2021-04-02 18 14 26" src="https://user-images.githubusercontent.com/11864345/113401989-4afcbe80-93df-11eb-9460-262978c3603d.png">
+
+<img width="852" alt="スクリーンショット 2021-04-02 18 18 22" src="https://user-images.githubusercontent.com/11864345/113402350-d6764f80-93df-11eb-878b-0e5e2fc2fe78.png">
+
+
+モデルサイズが大きいほど正解率が上昇する傾向があり、簡単なタスクCL, RIでは正解率が高めである一方難しいタスクAは低めでありRWはモデルサイズにかかわらず解けない。
+zero-shotではほとんどの問題が解けず、one-shotでもfew-shotと比較すると大幅な性能の低下が見られた。testの段階でタスクを学習できていると思われる。（学習データには出現しないと思われるため。）
+これらのタスクを解くには文字レベルの操作が必要だが、BPEでは1トークンあたり0.7単語分の分解が行われるため、より細かい分解が必要となる。
+また、CL, A1, A2は、元の単語が編集後の単語と1:1対応ではないため、元の単語を予測するために検索のような処理が必要と思われる。
+
+### 3.9.3 SAT Analogies
+374のSATアナロジー問題を収集。2つの単語間関係が与えられ、それと同じ関係を持つ別の単語ペアを選択する問題。2005年以前のSAT大学入学試験を使用
+例： “audacious is to boldness as (a) sanctimonious is to hypocrisy, (b) anonymous is to identity, (c) remorseful is to misdeed, (d) deleterious is to result, (e) impressionable is to temptation” 正解は(a)。
+
+<img width="856" alt="スクリーンショット 2021-04-02 18 29 25" src="https://user-images.githubusercontent.com/11864345/113403307-6072e800-93e1-11eb-8150-78b7fb9d193d.png">
+
+モデルサイズが大きいほど正解率が高くなる傾向がある。受験者の平均正解率は57％であり、one,few-shotで上回る（ランダムだと20%）
+
+### 3.9.4 News Article Generation
+GPT-3が生成したニュース記事と人間が作成した記事を人間が見分けられるかで検証
+
+
+
+### 3.9.5 Learning and Using Novel Words
+1回だけ定義された単語を見た後、その単語を使用するタスク（1度使われた単語の意味を予測するタスクもあるが、今回は対象外）。
+存在しない単語を含む文とその前の説明文のペアをあらかじめ与え、few-shotのような設定とする。
+
+<img width="775" alt="スクリーンショット 2021-04-02 18 49 34" src="https://user-images.githubusercontent.com/11864345/113405084-2fe07d80-93e4-11eb-8d62-8e745d5ef38e.png">
+
+太字がGPT-3の出力、それ以外は人手で作成された。
+GPT-3の生成文は正しいor尤もらしいように見える。
+
+### 3.9.6 Correcting English Grammar
+文法訂正を以下のようなフォーマットで行う。（"Poor English Input: <sentence>\n Good English Output: <sentence>"）
+  
+<img width="642" alt="スクリーンショット 2021-04-02 18 40 10" src="https://user-images.githubusercontent.com/11864345/113404291-e0e61880-93e2-11eb-91ac-2e57dff5887a.png">
+
+太字がGPT-3の出力、それ以外は人手で作成された。
+good, poorの意味を文法としての意味であると判定できていない場合がある。例えば下から3番目では、cheapを削除している。
