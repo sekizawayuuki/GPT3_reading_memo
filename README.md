@@ -197,6 +197,15 @@ zero-shotではほとんどの問題が解けず、one-shotでもfew-shotと比�
 ### 3.9.4 News Article Generation
 GPT-3が生成したニュース記事と人間が作成した記事を人間が見分けられるかで検証
 
+<img width="841" alt="スクリーンショット 2021-04-23 18 52 36" src="https://user-images.githubusercontent.com/11864345/115854372-21c2d180-a465-11eb-99b5-dfbf5b6180d9.png">
+
+Mean Accuracy が低いほど、人間作成 or 機械作成を見分けられなかったことを表す。
+
+生成例は以下の通り。
+
+<img width="863" alt="スクリーンショット 2021-04-23 18 57 00" src="https://user-images.githubusercontent.com/11864345/115854946-b62d3400-a465-11eb-8ff9-9b4f35fb290d.png">
+
+<img width="854" alt="スクリーンショット 2021-04-23 18 57 18" src="https://user-images.githubusercontent.com/11864345/115854997-c0e7c900-a465-11eb-8a5c-ba13b1c9eb03.png">
 
 
 ### 3.9.5 Learning and Using Novel Words
